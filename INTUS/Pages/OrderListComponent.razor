@@ -1,0 +1,571 @@
+﻿@using INTUS.DTOs;
+@using INTUS.Models;
+@using INTUS.Services.Interfaces;
+@inject HttpClient Http
+@inject IOrderService _orderService
+@inject ISubElementService _subElementService
+@inject IWindowService _windowService
+@inject SweetAlertService swal
+@inject IJSRuntime JsRuntime
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Orders</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .dropdown-content {
+            display: none; /* Initially hide them */
+            padding-left: 20px;
+        }
+
+        .dropdown-heading {
+            cursor: pointer;
+        }
+
+        .heading {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="row">
+        <div class="col-sm-9">
+            <h2>Orders</h2>
+
+        </div>
+        <div class="col-sm-3">
+            <a href="#addOrderModal" class="btn btn-success" data-toggle="modal">Add Order</a>
+
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+            <tr>
+                <td>S/N</td>
+                <th>Order Name</th>
+                <th>State</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            @foreach (var order in Orders)
+            {
+                <tr>
+                    <td>@(count += 1)</td>
+                    <td>
+                        @order.Name
+                        <div id="@order.OrderId" class="dropdown-content">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>Window Name</th>
+                                        <th>Quantity</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if(order?.Windows?.Count > 0)
+                                    {
+                                        @foreach (var window in order?.Windows)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    @window.Name
+                                                    <!-- Window A51 -->
+                                                    <div id=@window.WindowId class="dropdown-content">
+                                                        <table class="table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Type</th>
+                                                                    <th>Width</th>
+                                                                    <th>Height</th>
+                                                                    <th>Actions</th>
+
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @if(window?.SubElements?.Count > 0)
+                                                                {
+                                                                    @foreach (var subElement in window.SubElements)
+                                                                    {
+                                                                        <tr>
+                                                                            <td>@subElement.Type</td>
+                                                                            <td>@subElement.Width</td>
+                                                                            <td>@subElement.Height</td>
+                                                                            <td>
+                                                                                <a href="#editTypeModal"  data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+                                                                                <a href="#deleteTypeModal" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    }
+                                                                }
+                                                                
+                                                                
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                                <td>@window?.QuantityOfWindows</td>
+                                                <td>
+                                                    <a href="" onclick="toggleDropdown('@window?.WindowId')" class="edit" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="View Details">&#xE5CF;</i></a>
+                                                    <a href="#addTypeModal"  data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Add">&#xE145;</i></a>
+                                                    <a href="#editWindowModal" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>
+                                                    <a href="#deleteWindowModal" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                    
+                                    
+                                </tbody>
+
+                            </table>
+
+                        </div>
+                    </td>
+
+                    <td>@order?.State</td>
+                    <td>
+                        <a href="" onclick="toggleDropdown('@order?.OrderId')"><i class="material-icons" data-toggle="tooltip" title="View Details">&#xE5CF;</i></a>
+                        <a href="#addWindowModal" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Add">&#xE145;</i></a>&nbsp;&nbsp;
+                        <a href="#editOrderModal"  data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Edit">&#xE254;</i></a>&nbsp;&nbsp;
+                        <a href="#deleteOrderModal" data-toggle="modal"><i class="material-icons" data-toggle="tooltip" title="Delete">&#xE872;</i></a>
+
+                    </td>
+                   
+                </tr>
+            }
+            
+        </tbody>
+    </table>
+
+</body>
+</html>
+
+<!---- Edit Order Modal ---------->
+<div id="editOrderModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Order</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                   
+                    <div class="form-group">
+                        <label>Order Name</label>
+                        <input type="text" class="form-control" @bind-value="updateOrderDTO.Name"  required>
+                    </div>
+                    <div class="form-group">
+                        <label>State</label>
+                        <input type="text" class="form-control" @bind-value="updateOrderDTO.State"  required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-info" @onclick="async() => await UpdateOrderAsync()" value="Save">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!---- Add Order Modal ---------->
+<div id="addOrderModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Add Order</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Order Name</label>
+                        <input type="text" class="form-control" @bind-value="addOrderDTO.Name" required>
+                    </div>
+                    <div class="form-group" >
+                        <label>State</label>
+                        <input type="text" class="form-control" @bind-value="addOrderDTO.State" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-info" @onclick=" async () => await AddOrderAsync()" value="Save">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!---- Edit Window Modal ---------->
+<div id="editWindowModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Window</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Window Name</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-info" value="Save">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!---- Add Window Modal ---------->
+<div id="addWindowModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Add Window</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Window Name</label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantity</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-info" value="Save">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!---- Edit Type Modal ---------->
+<div id="editTypeModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Edit Type</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Type </label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Width</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Height</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-info" value="Save">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!---- Add Type Modal ---------->
+<div id="addTypeModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Add Type</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Type </label>
+                        <input type="text" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Width</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Height</label>
+                        <input type="number" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-info" value="Save">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Order Modal HTML -->
+<div id="deleteOrderModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Delete Order</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete these Records?</p>
+                    <p class="text-warning"><small>This action cannot be undone.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-danger" value="Delete">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Window Modal HTML -->
+<div id="deleteWindowModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Delete Window</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete these Records?</p>
+                    <p class="text-warning"><small>This action cannot be undone.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-danger" value="Delete">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete sub element Type Modal HTML -->
+<div id="deleteTypeModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form>
+                <div class="modal-header">
+                    <h4 class="modal-title">Delete Type</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete these Records?</p>
+                    <p class="text-warning"><small>This action cannot be undone.</small></p>
+                </div>
+                <div class="modal-footer">
+                    <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel">
+                    <input type="submit" class="btn btn-danger" value="Delete">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    int count = 0;
+    string currentOrderId = "";
+    AddOrderDTO addOrderDTO = new AddOrderDTO();
+    AddWindowDTO addWindowDTO = new AddWindowDTO();
+    AddSubElementDTO addSubElementDTO = new AddSubElementDTO();
+
+    UpdateOrderDTO updateOrderDTO = new UpdateOrderDTO();
+    UpdateSubElementDTO updateSubElementDTO = new UpdateSubElementDTO();
+    UpdateWindowDTO updateWindowDTO = new UpdateWindowDTO();
+
+    public List<Order> Orders = new List<Order>();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        var response = await Http.GetAsync("https://localhost:7052/api/Order");
+
+        Orders = await response.Content.ReadFromJsonAsync<List<Order>>();
+
+        //await swal.FireAsync("success");
+
+    }
+    //public async Task AssignId(string id)
+    //{
+    //    currentOrderId = id;
+       
+    //}
+    public async Task AddOrderAsync()
+    {
+
+        var order = new Order()
+            {
+                Name = addOrderDTO.Name,
+                State = addOrderDTO.State
+            };
+
+        try
+        {
+            var response = await _orderService.AddOrder(order);
+            if (response)
+            {
+                await swal.FireAsync("success");
+                
+            }
+            else
+            {
+               
+            }
+
+        }
+        catch (Exception)
+        {
+            
+            throw;
+        }
+        
+    }
+
+    public async Task UpdateOrderAsync()
+    {
+        
+
+        try
+        {
+            await _orderService.UpdateOrder(new UpdateOrderDTO{Name = updateOrderDTO.Name,State = updateOrderDTO.State},currentOrderId);
+        }
+        catch (Exception)
+        {
+            
+            throw;
+        }
+        
+    }
+
+    //public async Task DeleteOrder()
+    //{
+    //    try
+    //    {
+    //        await _orderService.CancelOrder();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+        
+    //}
+
+    //public async Task AddWindow()
+    //{
+    //    try
+    //    {
+    //        await _windowService.AddWindow();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+       
+    //}
+
+    //public async Task UpdateWindow()
+    //{
+    //    try
+    //    {
+    //        await _windowService.UpdateWindow();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+        
+    //}
+
+    //public async Task DeleteWindow()
+    //{
+    //    try
+    //    {
+    //        await _windowService.RemoveWindow();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+        
+    //}
+
+    //public async Task UpdateSubElement()
+    //{
+    //    try
+    //    {
+    //        await _subElementService.UpdateSubElement();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+        
+    //}
+
+    //public async Task AddSubElement()
+    //{
+    //    try
+    //    {
+    //        await _subElementService.AddSubElement();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+        
+    //}
+
+    //public async Task DeleteSubElement()
+    //{
+    //    try
+    //    {
+    //        await _subElementService.RemoveSubElement();
+    //    }
+    //    catch (Exception)
+    //    {
+            
+    //        throw;
+    //    }
+        
+    //}
+}

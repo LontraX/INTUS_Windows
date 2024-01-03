@@ -1,0 +1,39 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33213.308
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "INTUS", "INTUS\INTUS.csproj", "{3A3EFA91-4DDE-4BDE-801D-3A20315693E9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Backend", "Backend", "{23E2024F-AF1F-4307-8EE6-BB62A3135BB7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Frontend", "Frontend", "{B3CCB9FA-5957-4E86-8011-A5550FAF32C9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "INTUS-Backend", "INTUS-Backend\INTUS-Backend.csproj", "{A50595DC-3F6A-4498-A54E-FB043654A094}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3A3EFA91-4DDE-4BDE-801D-3A20315693E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A3EFA91-4DDE-4BDE-801D-3A20315693E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A3EFA91-4DDE-4BDE-801D-3A20315693E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A3EFA91-4DDE-4BDE-801D-3A20315693E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A50595DC-3F6A-4498-A54E-FB043654A094}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A50595DC-3F6A-4498-A54E-FB043654A094}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A50595DC-3F6A-4498-A54E-FB043654A094}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A50595DC-3F6A-4498-A54E-FB043654A094}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3A3EFA91-4DDE-4BDE-801D-3A20315693E9} = {B3CCB9FA-5957-4E86-8011-A5550FAF32C9}
+		{A50595DC-3F6A-4498-A54E-FB043654A094} = {23E2024F-AF1F-4307-8EE6-BB62A3135BB7}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5A19E51C-8589-4ACD-AE16-222E93F7D342}
+	EndGlobalSection
+EndGlobal
